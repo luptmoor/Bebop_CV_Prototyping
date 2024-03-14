@@ -31,11 +31,18 @@ for rf in np.linspace(0, 1, 21):
     TPR = TPs / (TPs + FNs)  # fraction of true positives among all actuallly positives
     FPR = FPs / (FPs + TNs)  # fraction of false positives among all actually negatives
 
+
     TPRs.append(TPR)
     FPRs.append(FPR)
     # print(f"For risk factor {rf}, {TPs} true positives, {TNs} true negatives, {FPs} false positives and {FNs} false negatives were detected ({TPs + TNs + FPs + FNs} in total)")
     # dummy = input('break')
 
+resultframe = pd.DataFrame();
+resultframe['RF'] = pd.Series(np.linspace(0, 1, 21))
+resultframe['TPR'] = pd.Series(TPRs);
+resultframe['FPR'] = pd.Series(FPRs);
+
+resultframe.to_csv('Results.csv')
 
 
 plt.plot(FPRs, TPRs)
