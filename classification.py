@@ -43,7 +43,7 @@ def classify(risk_factor, verbose=True, plot=True, resize_factor=4, max_elevatio
         print(f"maximum risk: {max_risk}");
         print()
 
-    for imagename in os.listdir(folder):
+    for imagename in sorted(os.listdir(folder)):
 
         path = folder + "/" + imagename
         print(path)
@@ -150,6 +150,8 @@ def classify(risk_factor, verbose=True, plot=True, resize_factor=4, max_elevatio
             print('state: OBSTACLE FOUND');
         elif (confidence >= 2):
             print('state: SAFE');
+        else:
+            print('state: SEARCH FOR SAFE HEADING');
         
         print()
         print()
