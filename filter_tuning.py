@@ -3,7 +3,7 @@ import numpy as np
 
 def update_image(y_min, y_max, u_min, u_max, v_min, v_max):
     # Read the image
-    image = cv2.imread('raw_autopilot_borroweddrone/55887660.jpg')
+    image = cv2.imread('test4_raw/286453891.jpg')
     
     # Convert image to YUV color space
     yuv_image = cv2.cvtColor(image, cv2.COLOR_BGR2YUV)

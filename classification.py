@@ -5,14 +5,11 @@ import os
 import matplotlib.pyplot as plt
 import pandas as pd
 
-folder = "Labelled"
+folder = "week5/week5_raw"
 
 
-resize_factor = 4
-max_elevation = 80
 
-
-def filter_image(n_rows, image_name = 'test1/1.jpg', y_low = 50, y_high = 200, u_low = 120, u_high = 130, v_low = 120, v_high = 130):
+def filter_image(n_rows, resize_factor, image_name = 'test1/1.jpg', y_low = 50, y_high = 200, u_low = 120, u_high = 130, v_low = 120, v_high = 130):
     im = cv2.imread(image_name)
     im = cv2.resize(im, (int(im.shape[1]/resize_factor), int(im.shape[0]/resize_factor)))
     YUV = cv2.cvtColor(im, cv2.COLOR_BGR2YUV)
@@ -33,11 +30,18 @@ def filter_image(n_rows, image_name = 'test1/1.jpg', y_low = 50, y_high = 200, u
 
     return original, Filtered
 
+
 def classify(risk_factor, verbose=True, plot=True, resize_factor=4, max_elevation=80):
     n_rows = int(max_elevation // resize_factor)
     max_risk = int(n_rows // (1/risk_factor))  # max risk ~ rf
     decisions = []
     image_codes = []
+    confidence = 0
+
+    if verbose:
+        print(f"Number of rows: {n_rows}");
+        print(f"maximum risk: {max_risk}");
+        print()
 
     for imagename in os.listdir(folder):
 
@@ -49,7 +53,7 @@ def classify(risk_factor, verbose=True, plot=True, resize_factor=4, max_elevatio
         #fimage = filter_color(image_name=path, y_low = 80, y_high = 150, u_low = 0, u_high = 120, v_low = 0, v_high = 155)
 
         # accepts brighter images to account for the overlooked ground near the control desks, also ignores darker patches to detect less plant
-        original_image, filtered_image = filter_image(n_rows, image_name=path, y_low = 100, y_high = 170, u_low = 0, u_high = 120, v_low = 0, v_high = 150)
+        original_image, filtered_image = filter_image(n_rows, resize_factor=resize_factor, image_name=path, y_low = 100, y_high = 170, u_low = 0, u_high = 120, v_low = 0, v_high = 150)
 
 
         centre_length = filtered_image.shape[1] // 3
@@ -126,18 +130,27 @@ def classify(risk_factor, verbose=True, plot=True, resize_factor=4, max_elevatio
 
         
         if risk > max_risk:
+            confidence -= 2;
             print('Risk too high!')
             if right_preference > left_preference:
                 decisions.append('r')
-                print('Turning right.')
+                print('Suggest right.')
             else:
                 decisions.append('l')
-                print('Turning left,')
+                print('Suggest left,')
         else:
-            print("Moving ahead.")
+            confidence += 1;
+            print("Suggest moving ahead.")
             decisions.append('s')
         
-    
+        confidence = max(min(confidence, 5), 0);
+        print(f"Confidence: {confidence}");
+
+        if (confidence == 0):
+            print('state: OBSTACLE FOUND');
+        elif (confidence >= 2):
+            print('state: SAFE');
+        
         print()
         print()
 
@@ -158,20 +171,21 @@ def classify(risk_factor, verbose=True, plot=True, resize_factor=4, max_elevatio
 ##########################
 
 
-df = pd.DataFrame()
+# df = pd.DataFrame()
 
-for rf in np.linspace(0, 1, 21):
+# for rf in np.linspace(0, 1, 21):
 
-    print(rf)
-    imcodes, decs = classify(rf, verbose=False, plot=False)
+#     print(rf)
+#     imcodes, decs = classify(rf, verbose=False, plot=False)
 
-    print(pd.Series(decs))
+#     print(pd.Series(decs))
 
-    df['Img code'] = pd.Series([imc[-12:-4] for imc in imcodes])
-    df[f'{rf}'] = pd.Series(decs)
-    df.to_csv('Classifications.csv')
+#     df['Img code'] = pd.Series([imc[-12:-4] for imc in imcodes])
+#     df[f'{rf}'] = pd.Series(decs)
+#     df.to_csv('Classifications.csv')
 
 
-#imcodes, decs = classify(0.4, verbose=True, plot=True)
+
+imcodes, decs = classify(0.4, resize_factor=1, verbose=True, plot=True)
 
 
